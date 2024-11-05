@@ -1,69 +1,123 @@
 import * as THREE from 'three'
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import GUI from 'lil-gui'
 import { gsap } from 'gsap'
-import { RGBELoader } from 'three/examples/jsm/loaders/RGBELoader.js'
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
-
-const gui = new GUI()
 
 const canvas = document.querySelector('canvas.webgl')
 
 const scene = new THREE.Scene()
-scene.background = new THREE.Color(0.85, 0.85, 0.85)
-
-const ambientLight = new THREE.AmbientLight(0xffffff, 0.5)
-scene.add(ambientLight)
-const directionalLight = new THREE.DirectionalLight(0xffffff, 1)
-directionalLight.position.set(5, 5, 5)
-scene.add(directionalLight)
-
 const clock = new THREE.Clock()
 const raycaster = new THREE.Raycaster()
 
-/**
- * Sizes
- */
+scene.background = new THREE.Color(0.85, 0.85, 0.85)
 
+const ambientLight = new THREE.AmbientLight(0xffffff, 1)
+scene.add(ambientLight)
+
+// Window Size
 const sizes = {
     width: window.innerWidth,
     height: window.innerHeight
 }
 
-/**
- * Camera
- */
-// Base camera
-const aspectRatio = sizes.width / sizes.height
-//const camera = new THREE.OrthographicCamera(- 1 * aspectRatio*5, 1 * aspectRatio*5, 5, -5, 1, 100)
-const camera = new THREE.PerspectiveCamera(75, sizes.width / sizes.height, 0.1, 100)
+// Base camera Settings
+const camera = new THREE.PerspectiveCamera(80, sizes.width / sizes.height, 0.1, 100)
 camera.position.x = 0
-camera.position.y = -4
-camera.position.z = 10
+camera.position.y = 0
+camera.position.z = 5
 camera.rotation.x = 0.35
 
 scene.add(camera)
 
-// Controls
+// Audio Listener Setup
+const listener = new THREE.AudioListener()
+camera.add(listener)
+
+// Orbit Controls Setup
 const controls = new OrbitControls(camera, canvas)
 controls.enableDamping = true
 controls.dampingFactor = 0.05
 controls.enableZoom = true
+controls.enabled = false
 
 // Load texture
 const textureLoader = new THREE.TextureLoader()
-const texture = textureLoader.load('./static/Bear.png') // Update with your image path
 
-// Create a plane geometry for the image
-const imageGeometry = new THREE.PlaneGeometry(10, 10) // Adjust size as needed
-const imageMaterial = new THREE.MeshBasicMaterial({ 
-    map: texture,
-    side: THREE.DoubleSide
+const sceneObjects = [
+    {
+        name: 'background',
+        texture: './static/bg1.png',
+        geometry: [12, 8], 
+        position: [0, 0, -0.2],
+        opacity: 1,
+        zIndex: -1,
+        visible: true
+    },
+    {
+        name: 'bear',
+        texture: './static/bear1.png',
+        geometry: [4, 4],
+        position: [2.5, -1, 0],
+        opacity: 1,
+        zIndex: 0,
+        visible: true
+    },
+    {
+        name: 'bear2',
+        texture: './static/bear2.png',
+        geometry: [4, 4],
+        position: [2.5, -1, 0],
+        opacity: 0,
+        zIndex: 0,
+        visible: false
+    },
+    {
+        name: 'dialog',
+        texture: './static/dialog1.png',
+        geometry: [4, 4],
+        position: [0.5, 1.5, 0.1],
+        opacity: 1,
+        zIndex: 1,
+        visible: false
+    },
+    {
+        name: 'nextButton',
+        texture: './static/next.png',
+        geometry: [2, 1],
+        position: [4, -2, 0.1],
+        opacity: 0,
+        zIndex: 1,
+        visible: false
+    }
+]
+
+// Create meshes from scene objects
+const meshes = {}
+
+sceneObjects.forEach(obj => {
+    const texture = textureLoader.load(obj.texture)
+    texture.colorSpace = THREE.SRGBColorSpace
+    
+    const geometry = new THREE.PlaneGeometry(...obj.geometry)
+    const material = new THREE.MeshBasicMaterial({ map: texture })
+    
+    material.transparent = true
+    material.opacity = obj.opacity
+    
+    const mesh = new THREE.Mesh(geometry, material)
+    mesh.position.set(...obj.position)
+    
+    if(obj.scale) {
+        mesh.scale.set(...obj.scale)
+    }
+    
+    meshes[obj.name] = mesh
+    
+    // Only add to scene if visible is true
+    if(obj.visible) {
+        scene.add(mesh)
+    }
 })
-const imageMesh = new THREE.Mesh(imageGeometry, imageMaterial)
-imageMesh.position.set(0, 0, 0) // Adjust position as needed
-imageMaterial.transparent = true
-imageMaterial.alphaTest = 0.5 // Adjust this value between 0 and 1 to control transparency threshold
-scene.add(imageMesh)
 
 // Add click event listener to the canvas
 canvas.addEventListener('click', (event) => {
@@ -76,25 +130,64 @@ canvas.addEventListener('click', (event) => {
     raycaster.setFromCamera(mouse, camera)
 
     // Calculate objects intersecting the picking ray
-    const intersects = raycaster.intersectObject(imageMesh)
+    const intersects = raycaster.intersectObject(meshes.bear)
 
     if (intersects.length > 0) {
-        // Create a fade out animation
-        const fadeOut = gsap.to(imageMaterial, {
-            opacity: 0,
-            duration: 1,
-            onComplete: () => {
-                scene.remove(imageMesh)
-            }
-        })
+        // Create sequential fade animations
+        const animateSequence = (meshes, animations) => {
+            const timeline = gsap.timeline()
+            
+            meshes.forEach((mesh, index) => {
+                switch(animations[index]) {
+                    case 'fadeOut':
+                        timeline.to(mesh.material, {
+                            opacity: 0,
+                            duration: 0.5,
+                            onComplete: () => {
+                                scene.remove(mesh)
+                                if (index + 1 < meshes.length) {
+                                    scene.add(meshes[index + 1])
+                                    timeline.to(meshes[index + 1].material, {
+                                        opacity: 1,
+                                        duration: 0.5
+                                    })
+                                }
+                            }
+                        })
+                        break
+                        
+                    case 'appear':
+                        timeline.to(mesh.material, {
+                            opacity: 1,
+                            duration: 0.5,
+                            onStart: () => {
+                                scene.add(mesh)
+                            }
+                        })
+                        break
+                        
+                    case 'pop out':
+                        timeline.from(mesh.scale, {
+                            x: 0,
+                            y: 0,
+                            duration: 0.5,
+                            ease: "back.out(1.7)",
+                            onStart: () => {
+                                scene.add(mesh)
+                                mesh.material.opacity = 1
+                            }
+                        })
+                        break
+                }
+            })
+            
+            return timeline
+        }
+
+        animateSequence([meshes.bear, meshes.bear2, meshes.dialog, meshes.nextButton], 
+                       ['fadeOut', 'appear', 'pop out', 'pop out'])
     }
 })
-
-// Ensure the material can handle opacity changes
-imageMaterial.transparent = true
-imageMaterial.opacity = 1
-
-
 
 /**
  * Renderer
@@ -110,7 +203,6 @@ renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
 const tick = () => {
     const elapsedTime = clock.getElapsedTime()
 
-
     // Update controls
     // controls.update()
 
@@ -122,5 +214,3 @@ const tick = () => {
 }
 
 tick()
-
-gui.hide()
