@@ -113,6 +113,15 @@ const createSceneMeshes = (currentSceneObjects) => {
     })
 }
 
+const removeCurrentPopOutMesh = () => {
+    if (window.currentPopOutMesh) {
+        scene.remove(window.currentPopOutMesh)
+        window.currentPopOutMesh.visible = false
+        window.currentPopOutMesh.material.opacity = 0
+        window.currentPopOutMesh = null
+    }
+}
+
 createSceneMeshes(currentSceneObjects)
 
 let clickTargetIndex = 0
@@ -160,7 +169,9 @@ canvas.addEventListener('click', (event) => {
         clickTargetIndex++
 
         switch(animation.animation) {
+
             case 'transform':
+                removeCurrentPopOutMesh()
                 const targetMesh = meshes[animation.transformTarget]
                 
                 timeline.to(mesh.material, {
@@ -184,6 +195,7 @@ canvas.addEventListener('click', (event) => {
                     break
 
                 case 'fadeIn':
+                    removeCurrentPopOutMesh()
                     timeline.to(mesh.material, {
                         opacity: 1,
                         duration: 0.5,
@@ -200,6 +212,7 @@ canvas.addEventListener('click', (event) => {
                     break
 
                 case 'pingpong':
+                    removeCurrentPopOutMesh()
                     const originalX = mesh.position.x
                     timeline.to(mesh.position, {
                         x: originalX + 4,
@@ -223,8 +236,68 @@ canvas.addEventListener('click', (event) => {
                         }
                     })
                     break
+                case 'movingScale':
+                    removeCurrentPopOutMesh()
+                    const scaleSize = animation.scaleSize || 1.5
+                    const movePosition = animation.movePositionChange || [0, 0, 0]
+                    timeline.to(mesh.position, {
+                        x: mesh.position.x + movePosition[0],
+                        y: mesh.position.y + movePosition[1],
+                        z: mesh.position.z + movePosition[2],
+                        duration: 1,
+                        ease: "power1.inOut"
+                    }, "<")
+                    .to(mesh.scale, {
+                        x: scaleSize,
+                        y: scaleSize,
+                        duration: 1,
+                        ease: "power1.inOut",
+                        onComplete: () => {
+                            if (isLastAnimation) {
+                                showNextButton(scene, meshes, timeline)
+                            }
+                        }
+                    }, "<")
+                    break
+
+                case 'transformMultiple':
+                    removeCurrentPopOutMesh()
+                    const objects = Array.isArray(animation.object) ? animation.object : [animation.object]
+                    const targets = Array.isArray(animation.transformTarget) ? animation.transformTarget : [animation.transformTarget]
+                    
+                    objects.forEach((objName, index) => {
+                        const sourceMesh = meshes[objName]
+                        const targetMesh = meshes[targets[index]]
+                        
+                        timeline.to(sourceMesh.material, {
+                            opacity: 0,
+                            duration: 0.5,
+                            onComplete: () => {
+                                sourceMesh.visible = false
+                                targetMesh.visible = true
+                            }
+                        })
+                        .to(targetMesh.material, {
+                            opacity: 1, 
+                            duration: 0.5,
+                            onStart: () => {
+                                scene.add(targetMesh)
+                            },
+                            onComplete: () => {
+                                if (isLastAnimation && index === objects.length - 1) {
+                                    showNextButton(scene, meshes, timeline)
+                                }
+                            }
+                        })
+                    })
+                    break
 
                 case 'pop out':
+                    removeCurrentPopOutMesh()
+                    
+                    // Store current mesh as the active pop out
+                    window.currentPopOutMesh = mesh
+                    
                     timeline.from(mesh.scale, {
                         x: 0,
                         y: 0,
@@ -237,10 +310,19 @@ canvas.addEventListener('click', (event) => {
                         },
                         onComplete: () => {
                             if (isLastAnimation) {
+                                // Clear pop out reference when scene is complete
+                                window.currentPopOutMesh = null
                                 showNextButton(scene, meshes, timeline)
                             }
                         }
                     })
+                    break
+                case 'none':
+                    removeCurrentPopOutMesh()
+                    // Do nothing
+                    if (isLastAnimation) {
+                        showNextButton(scene, meshes, timeline)
+                    }
                     break
             }
         }
