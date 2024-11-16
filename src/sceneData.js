@@ -1,17 +1,52 @@
 export const scenes = [
+    // Scene 00: Start
+    [
+        {
+            name: 'background',
+            texture: './bg1.png',
+            geometry: [12, 8],
+            position: [0, 0, -0.1],
+            opacity: 1,
+            visible: true
+        },
+        {
+            name: 'bear0',
+            texture: './bear0.png',
+            geometry: [5.3, 6.5],
+            position: [0, -0.5, 0.1],
+            opacity: 1,
+            visible: true
+        },
+        {
+            name: 'title',
+            texture: './title.png',
+            geometry: [6, 4],
+            position: [3, 2, 0.1],
+            opacity: 1,
+            visible: true
+        },
+        {
+            name: 'nextButton',
+            texture: './next.png',
+            geometry: [1.3, 1.3],
+            position: [4.9, -3, 0.3],
+            opacity: 1,
+            visible: true
+        }
+    ],
     // Scene 01: Button up
     [
         {
             name: 'background',
             texture: './bg1.png',
-            geometry: [12, 8], 
+            geometry: [12, 8],
             position: [0, 0, -0.1],
             opacity: 1,
             visible: true
         },
         {
             name: 'bear1',
-            texture: './bear1.png', 
+            texture: './bear1.png',
             geometry: [4, 4],
             position: [2.5, -1, 0.1],
             opacity: 1,
@@ -20,7 +55,7 @@ export const scenes = [
         {
             name: 'bear2',
             texture: './bear2.png',
-            geometry: [4, 4], 
+            geometry: [4, 4],
             position: [2.5, -1, 0.1],
             opacity: 0,
             visible: false
@@ -28,7 +63,7 @@ export const scenes = [
         {
             name: 'bear3',
             texture: './bear3.png',
-            geometry: [4, 4], 
+            geometry: [4, 4],
             position: [2.5, -1, 0.1],
             opacity: 0,
             visible: false
@@ -63,7 +98,7 @@ export const scenes = [
         {
             name: 'bear3',
             texture: './bear3.png',
-            geometry: [4, 4], 
+            geometry: [4, 4],
             position: [-3, -1.5, 0.1],
             opacity: 1,
             visible: true
@@ -71,7 +106,7 @@ export const scenes = [
         {
             name: 'toycar',
             texture: './toycar.png',
-            geometry: [2, 1.5], 
+            geometry: [2, 1.5],
             position: [-1, -2.5, 0.1],
             opacity: 1,
             visible: true
@@ -106,7 +141,7 @@ export const scenes = [
         {
             name: 'bear4',
             texture: './bear4.png',
-            geometry: [4.5, 4], 
+            geometry: [4.5, 4],
             position: [3, -1.5, 0.1],
             opacity: 1,
             visible: true
@@ -234,7 +269,7 @@ export const scenes = [
             opacity: 0,
             visible: false
         }
-        
+
     ],
     // Scene 05: Taking Bus
     [
@@ -299,7 +334,7 @@ export const scenes = [
         },
         {
             name: 'familybear2',
-            texture: './familybear2.png', 
+            texture: './familybear2.png',
             geometry: [6, 4],
             position: [-0.6, -1.8, 0.1],
             opacity: 1,
@@ -427,23 +462,30 @@ export const scenes = [
 ];
 
 export const sceneAnimations = [
+    // Scene 00: Start
+    [
+        {}
+    ],
     // Scene 01: Button up
     [
         {
             object: 'bear1',
             animation: 'transform',
             transformTarget: 'bear2',
+            sound: 'transform.mp3',
             order: 1
         },
         {
             object: 'bear2',
             animation: 'transform',
             transformTarget: 'bear3',
+            sound: 'transform.mp3',
             order: 2
         },
         {
             object: 'dialog',
             animation: 'pop out',
+            sound: 'dialog.mp3',
             order: 3
         }
     ],
@@ -452,11 +494,13 @@ export const sceneAnimations = [
         {
             object: 'toycar',
             animation: 'pingpong',
+            sound: 'toycar.mp3',
             order: 1
         },
         {
             object: 'dialog2',
             animation: 'pop out',
+            sound: 'dialog2.mp3',
             order: 2
         }
     ],
@@ -466,11 +510,13 @@ export const sceneAnimations = [
             object: 'tvoff',
             animation: 'transform',
             transformTarget: 'tvon',
+            sound: 'cartoon.mp3',
             order: 1
         },
         {
             object: 'dialog3',
             animation: 'pop out',
+            sound: 'dialog3.mp3',
             order: 2
         }
     ],
@@ -479,34 +525,40 @@ export const sceneAnimations = [
         {
             object: 'dialog4',
             animation: 'pop out',
+            sound: 'dialog4.mp3',
             order: 1
         },
         {
             object: 'dialog5',
             animation: 'pop out',
+            sound: 'dialog5.mp3',
             order: 2
         },
         {
             object: ['trafficlightgreen', 'pedestrianred'],
             animation: 'transformMultiple',
             transformTarget: ['trafficlightred', 'pedestriangreen'],
-            order: 4
-        },      
+            sound: 'traffic.mp3',
+            order: 3
+        },
         {
             object: 'dialog6',
             animation: 'pop out',
-            order: 3
+            sound: 'dialog6.mp3',
+            order: 4
         },
         {
             object: 'familybear',
             animation: 'movingScale',
             movePositionChange: [-2, -3, 0.0],
             scaleSize: 1.4,
+            sound: 'transform.mp3',
             order: 5
         },
         {
             object: 'dialog7',
             animation: 'pop out',
+            sound: 'dialog7.mp3',
             order: 6
         }
     ],
@@ -515,16 +567,19 @@ export const sceneAnimations = [
         {
             object: 'dialog8',
             animation: 'pop out',
+            sound: 'dialog8.mp3',
             order: 1
         },
         {
             object: 'dialog9',
             animation: 'pop out',
+            sound: 'dialog9.mp3',
             order: 2
         },
         {
             object: 'none',
             animation: 'none',
+            sound: 'busstop.mp3',
             order: 3
         },
         {
@@ -532,6 +587,7 @@ export const sceneAnimations = [
             animation: 'movingScale',
             movePositionChange: [-10, 0, 0.0],
             scaleSize: 1,
+            sound: 'transform.mp3',
             order: 4
         }
     ],
@@ -540,17 +596,20 @@ export const sceneAnimations = [
         {
             object: 'dialog10',
             animation: 'pop out',
+            sound: 'dialog10.mp3',
             order: 1
         },
         {
             object: 'elevator1',
             animation: 'transform',
             transformTarget: 'elevator5',
+            sound: 'elevator.mp3',
             order: 2
         },
         {
             object: 'dialog11',
             animation: 'pop out',
+            sound: 'dialog11.mp3',
             order: 3
         }
     ],
@@ -559,27 +618,35 @@ export const sceneAnimations = [
         {
             object: 'dialog12',
             animation: 'pop out',
+            sound: 'dialog12.mp3',
             order: 1
         },
         {
             object: 'none',
             animation: 'none',
+            sound: 'emergency.mp3',
             order: 2
         },
         {
             object: 'dialog13',
             animation: 'pop out',
+            sound: 'dialog13.mp3',
             order: 3
         },
         {
             object: 'dialog14',
             animation: 'pop out',
+            sound: 'dialog14.mp3',
             order: 4
         }
     ]
 ];
 
 export const clickableObjects = [
+    // Scene 00: Start
+    [
+        'nextButton'
+    ],
     // Scene 01: Button up
     [
         'bear1',
